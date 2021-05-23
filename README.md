@@ -139,6 +139,7 @@ item_lore DEFAULT "Şamda Kayısı"
 
 ```
 item_name | item_count | item_durability | item_lore
+
 Anka Kuşu | 1          | 100             | Şamda Kayısı
 ```
 
@@ -167,6 +168,7 @@ Sonuç:
 
 ```
 isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+
 Talha | (NULL)       | KAVAKLI  | 100                | true
 ```
 
@@ -181,6 +183,7 @@ Hadi olan bitene göz atalım sevgili Müzmin arkadaşım. `INSERT INTO` neydi? 
 
 ```
 isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+
 Talha | (NULL)       | KAVAKLI  | 100                | true
 Mert  | (NULL)       | YILMAZ   | -100               | false
 ```
@@ -201,17 +204,20 @@ Tablo tamamen boşaldı fakat tablodaki veri türleri hala duruyor. Bu test yapt
 Aşağıdaki gibi bir örnek verebiliyorduk hatırladıysan: */
 
 pid |  isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+
 1   |  Talha | (NULL)       | KAVAKLI  | 100                | true
 2   |  Mert  | (NULL)       | YILMAZ   | -100               | false
 
 /* Burada biz 2. PID değerini sildik diyelim: */
 
 pid |  isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+
 1   |  Talha | (NULL)       | KAVAKLI  | 100                | true
 
 /* Sonuç ne oldu? Üstteki gibi tek bir veri kaldı değil mi? Hadi şimdi bir veri ekleyelim: */
 
 pid |  isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+
 1   |  Talha | (NULL)       | KAVAKLI  | 100                | true
 3   |  Miaf  | (NULl)       | (NULL)   | -100               | false
 
