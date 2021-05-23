@@ -125,4 +125,98 @@ Kısacası `TEXT` 65 bin karaktere kadar destekler. `VARCHAR` ile uğraşmanız 
 
 Zaman kavramı MySQL'in desteklediği harika bazı içerikleri sizlere sunar. `DATETIME` size zaman verisi tutma olacağı verir. Bu verilerin `TIMESTAMP` olmadığını unutmayın. Bu tabloda biz dedik ki, sen bir `DATETIME` türüsün. Bu türün alabileceği `DEFAULT` yani hiçbir veri girilmezse `NULL`'u tercih etmek yerine yerleştireceğin veri şu anın zamanı olsun dedik. Evet, her veri girişinde otomatik olarak zamanı seçecek. 
 
+### Feridun abi, yine seks hikayesi mi yazıyosun?
+> MySQL `DEFAULT` birimlere selam verin! Neredeyse her veride `DEFAULT` belirleyebilirsiniz. Örnek vermek gerekirse:
 
+```
+item_name VARCHAR(50) NOT NULL,
+item_count INT DEFAULT 0
+item_durability DEFAULT 100
+item_lore DEFAULT "Şamda Kayısı"
+```
+
+Üstte üç adet `DEFAULT` birim verdik. Hadi yorumlayalım fakat ilk başta `DEFAULT` tam olarak ne yapar ondan söz edelim. `DEFAULT` sayesinde seçili sıraya veri girişi yapmazsanız otomatik olarak `DEFAULT` olarak seçili veriyi alır. Yani siz bu üstteki örnekte şu yerleri doldurdunuz diyelim: `item_name`'yi "Anka Kuş'u", `item_count`'u da bir olarak belirlediniz. İki yeri boş bıraktınız ama o birimlerin `DEFAULT` değerleri mevcut. Bundan dolayı veriler sırasıyla şöyle olacak:
+
+```
+item_name | item_count | item_durability | item_lore
+Anka Kuşu | 1          | 100             | Şamda Kayısı
+```
+
+Oluşturduğumuz tablolara göz atmak için `SHOW TABLES` `query`'ini girebilirsiniz.
+
+## Müzmin yedek burada! Verileri havuç olarak kayıt etmek.
+> Nasıl veri tablosu oluşturacağımızı yazdık. Sırada verileri tutmada. MySQL'da `INSERT INTO` adı verilen yeni giriş suretiyle veri ekleme biçimi mevcut. (Yani `INSERT INTO` durması belirtilmezse sonsuza dek veri ekleyebilir. Mevcut verinin üzerine yazmaz.) İlk başta nasıl veri tutacağız kısa bir şekilde ona bakalım. Tablomuz aşağıdaki gibi olsun.
+
+```
+CREATE TABLE aptallar (
+  isim VARCHAR(20) NOT NULL,
+  ikinci_isim VARCHAR(20),
+  soyisim VARCHAR(20) NOT NULL,
+  aptallik_seviyesi INT DEFAULT 0
+  bu_kisi_vurduruyor_mu BOOLEAN DEFAULT true
+);
+```
+
+Bu tabloya veri kayıdını şöyle yapabiliriz: 
+
+```
+INSERT INTO aptallar (isim, soyisim, aptallik_seviyesi) VALUES ('Talha','KAVAKLI',100);
+```
+
+Sonuç:
+
+```
+isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+Talha | (NULL)       | KAVAKLI  | 100                | true
+```
+
+Hadi olan bitene göz atalım sevgili Müzmin arkadaşım. `INSERT INTO` neydi? `INSERT INTO` sevgiydi, kardeşikti. İlk `query`'imiz `INSERT INTO` oldu. Daha sonrasında `aptallar` olarak yazdığımız tabloya verdiğimiz genel isimi belirtiyor. Daha sonrasında hangi verileri eklemek istiyorsak o verileri yazıyoruz. Tabloda toplam beş adet veri olabilir. Biz kayıt yaparken sadece üç veriyi eklemek istedik. Bunları sırasıyla virgül ile yazdık ve `VALUES` `query`'ini koyduk. Daha sonra da verileri nasıl istiyorsak öyle girdik. Burada `ikinci_isim` olmadığı için ve o veri tipine `NOT NULL` yazmadığımız için `(NULL)` olarak giriş yaptı. `BOOLEAN` veri tipi ise dört tip veriyi taşıyabilir bunlar: `true`, `false`, `0`, `1`. Burada `DEFAULT` olarak `true (1)` ayarlaması yaptık. 
+
+### Baldız baldan tatlıdır: TRUNCATE.
+> Araya girmek gerekirse size yeni baldızımız olan `TRUNCATE`'yi tanıtmak istiyorum. `TRUNCATE` kimsenin sevmediği ama yerini kimsenin tutamadığı baldızımız gibi. Ne demişler baldız baldan tatlıdır. 
+
+`TRUNCATE` en kısa anlatımla bir tablonun içindeki bütün verileri boşaltmanıza yarar. Hadi test edelim!
+
+Şu anki verilerimiz: 
+
+```
+isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+Talha | (NULL)       | KAVAKLI  | 100                | true
+Mert  | (NULL)       | YILMAZ   | -100               | false
+```
+
+Bu tablonun ismini hatırlayalım `aptallar`. Gireceğimiz `query` ise `TRUNCATE TABLE aptallar`. Bunun sonucu aşağıda yer alıyor:
+
+```
+isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+```
+
+Tablo tamamen boşaldı fakat tablodaki veri türleri hala duruyor. Bu test yaptıktan sonra eski haline getirmek için muhteşem bir çözümdür. 
+
+#### Uzman Sude yanıtlıyor: `TRUNCATE` işlemi tablodaki her şeyi sıfırladığı gibi `AUTO_INCREMENT` verisini de sıfırlar. Bu da ne ola ki?
+
+```
+/* Buradaki bilgiler ekstra bilgidir. Öğrenmek zorunda değilsin. */
+/* AUTO_INCREMENT neydi? Her veri girişinde kendisini arttıran bir sayı tablosuydu değil mi? 
+Aşağıdaki gibi bir örnek verebiliyorduk hatırladıysan: */
+
+pid |  isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+1   |  Talha | (NULL)       | KAVAKLI  | 100                | true
+2   |  Mert  | (NULL)       | YILMAZ   | -100               | false
+
+/* Burada biz 2. PID değerini sildik diyelim: */
+
+pid |  isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+1   |  Talha | (NULL)       | KAVAKLI  | 100                | true
+
+/* Sonuç ne oldu? Üstteki gibi tek bir veri kaldı değil mi? Hadi şimdi bir veri ekleyelim: */
+
+pid |  isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor_mu
+1   |  Talha | (NULL)       | KAVAKLI  | 100                | true
+3   |  Miaf  | (NULl)       | (NULL)   | -100               | false
+
+/* O da ne? Biz ikinci veriyi silmiştik? Ne yani AUTO_INCREMENT eski veriyi hatırlıyor ve 
+üzerine kayıt yapmıyor mu? Evet öyle. Bu hafızayı sıfırlamak için de TRUNCATE kullanılabilir. */
+```
+
+## Harici Beddah gibi mi olalım? İki veri eklemek de neyin nesi?
