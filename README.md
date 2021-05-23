@@ -94,4 +94,35 @@ Hadi en baştan başlayalım. Dedik ki `CREATE` yani oluştur daha sonrasında n
 3- Ali VARSUVAR
 ```
 
-Üstte de görüldüğü gibi otomatik sıra oluşturmanı sağlar. 
+Üstte de görüldüğü gibi otomatik sıra oluşturmanı sağlar. Bununla ne yaparım diye düşünenler için yaptığınız ceza sisteminde çok güzel ceza numarası olarak kullanabilirsiniz.
+
+İkinci satırda yer alan isim verisi için de dedik ki sen yirmi haneli `string` taşıyabilirsin. Bu ne demek oluyor? Yirmi karakter ve yirmi karakterin altındaki `string` verileri taşıyabilirsiniz. 
+
+```
+Aslı (dört hane.)
+Melih (beş hane.)
+Abdülrezzak Kıllıbacak (yirmi bir hane.)
+```
+
+Üstte verilen verilerden sadece `Aslı` ve `Melih` verisi girilebilir demek oluyor. Yirmi bir haneli veri girişi yapmaya çalışırsanız hata alırsınız. Yirmi bir verilik yer oluşturmak için `VARCHAR(21)` yapmanız yeterli. 
+
+**Character set diye bir şey var bak bana yan yan bakıyor?:** Normal `VARCHAR` birimleri ve diğer bütün `string` verileri sadece İngilizce Latin harfleri ve birimleri desteklediğinden dolayı içerisinde kullanılabilecek karakterleri arttırmak için `CHARACTER SET utf8` diyoruz. `VARCHAR`'ın özel bir durumu var. Dilerseniz böyle uzatabilirsiniz `VARCHAR(18) CHARACTER SET utf8` ya da `NVARCHAR(18)` kullanırsınız. İkisi de aynı sonuca çıkar.
+
+**Not Null diye bir şey var bana el sallıyor?:** `not null` seçili sıranın asla boş bırakılamayacağını söyler. Yani boş bırakmaya çalıştığınızda (`null/nil`) size hata vererek tabloya girişinize izin vermez. Boş bırakılabilecek (keyfekeder veri ekliyorsanız) `not null` kullanmamanız gerekir.
+
+Dördüncü sırada yer alan yaş tablosuna gelecek olursak o tablonun sadece sayı taşıyabileceğini söylemiştik. Diğerlerinden farklı olarak o sıra boş bırakılabilir. 
+
+Açıklama verisine gelecek olursak yeni bir ağabey ile sizi tanıştırmak istiyorum. Kendisine `TEXT` diyoruz. Aşağıda bir sıralama yapacak olursak:
+
+```
+TINYTEXT = VARCHAR(255) [En fazla 255 Byte yer kaplar.]
+TEXT = VARCHAR(65535) [En fazla 64 KB yer kaplar.]
+MEDIUMTEXT = VARCHAR(16777215) [En fazla 16 MB yer kaplar.]
+LONGTEXT = VARCHAR(4294967295) [En fazla 4 GB yer kaplar.]
+```
+
+Kısacası `TEXT` 65 bin karaktere kadar destekler. `VARCHAR` ile uğraşmanız yerine sizi kurtarır. Fakat neden yine de `VARCHAR` kullanılıyor diye sorarsanız kesin olan birimlerde `VARCHAR` kullanımı sağlıklıdır. Örnek vermek gerekirse T.C. Numaranızın alabileceği maksimum ve minimum hane değeri bellidir. Yanlış bir değer girildiğinde sizi tablo uyarır. `TEXT` biriminin desteği için `CHARACTER SET utf8`'i burada da kullandık.
+
+Zaman kavramı MySQL'in desteklediği harika bazı içerikleri sizlere sunar. `DATETIME` size zaman verisi tutma olacağı verir. Bu verilerin `TIMESTAMP` olmadığını unutmayın. Bu tabloda biz dedik ki, sen bir `DATETIME` türüsün. Bu türün alabileceği `DEFAULT` yani hiçbir veri girilmezse `NULL`'u tercih etmek yerine yerleştireceğin veri şu anın zamanı olsun dedik. Evet, her veri girişinde otomatik olarak zamanı seçecek. 
+
+
