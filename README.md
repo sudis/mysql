@@ -226,3 +226,203 @@ pid |  isim  | ikinci_isim  | soyisim  | aptallik_seviyesi  | bu_kisi_vurduruyor
 ```
 
 ## Harici Beddah gibi mi olalım? İki veri eklemek de neyin nesi?
+> `INSERT INTO`'nun veri değiştirme yapamayacağını söylemiştik. Hadi bunu örneklerle pekiştirelim. Aşağıda bir tablo örneği var:
+
+```
+memurun_ismi_soyismi | memurun_bodrosu | memurun_pozisyonu | aylık_kesinti
+
+Melih Şam            | 1000          | İnsan Kaynakları  | 50
+Damla                | 4500          | CEO               | 130
+```
+
+Bu tabloya birinci sıradaki aynı girişi yaparsak ne olur? 
+
+```
+INSERT INTO memurlar (memurun_ismi_soyismi, memurun_bodrosu, memurun_pozisyonu, aylık_kesinti) VALUES ('Melih Şam', 1000, 'İnsan Kaynakları', 50)
+```
+
+Sonuç:
+
+```
+memurun_ismi_soyismi | memurun_bodrosu | memurun_pozisyonu | aylık_kesinti
+
+Melih Şam            | 1000            | İnsan Kaynakları  | 50
+Damla                | 4500            | CEO               | 130
+Melih Şam            | 1000            | İnsan Kaynakları  | 50
+```
+
+Ağlak çocuğumuz Melih'in aylık aldığı maaşı düşürmemiz lazım. Tek başına bütün İnsan Kaynakları'nı sömürüyor köpek. Ne yapmalıyız?
+
+```
+UPDATE memurlar SET memurun_bodrosu = 500;
+```
+
+Sonucumuz ne olacak?
+
+```
+memurun_ismi_soyismi | memurun_bodrosu | memurun_pozisyonu | aylık_kesinti
+
+Melih Şam            | 500             | İnsan Kaynakları  | 50
+Damla                | 500             | CEO               | 130
+```
+
+Cafer bez getir! Bizim CEO'nun da maaşı 500'e düştü. Bizi öpmeden önce bu durumu düzeltmeliyiz ama ilk başta neden oldu bu?
+
+### Karşınızda kanatsız melek: `WHERE`.
+> Üstteki durumla karşılaşmanızın nedeni çok basit. Çünkü verinin değişmesini istedik ama kimin değişmesi gerektiğini istemedik. `WHERE` kullanmadığımız için herkesin verisi değişti. Hadi bunu düzeltelim:
+
+```
+UPDATE memurlar SET memurun_bodrosu = 500 WHERE memurun_ismi_soyismi = 'Melih Şam';
+```
+
+Sonuç:
+
+```
+memurun_ismi_soyismi | memurun_bodrosu | memurun_pozisyonu | aylık_kesinti
+
+Melih Şam            | 500             | İnsan Kaynakları  | 50
+Damla                | 4500            | CEO               | 130
+```
+
+## Baltaya sap olamayanlar için değişim şansı: `DELETE`.
+> Tabloyu tümden silme yolunu göstermiştik. Bu sefer tek bir sütunu nasıl silebileceğinizi göstereceğim. 
+
+```
+DELETE FROM memurlar WHERE memurun_ismi_soyismi = 'Melih Şam'
+```
+
+Üstteki `query`'i çalıştırdığımız zaman sonuç aşağıdaki gibi olacak:
+
+```
+memurun_ismi_soyismi | memurun_bodrosu | memurun_pozisyonu | aylık_kesinti
+
+Damla                | 4500            | CEO               | 130
+```
+
+## Ne demek sevdiklerimizi seçmek? Biz yanlı mıyız!
+> Hep birlikte oğlumuz `SELECT`'i kızımız `FROM`'a istiyoruz. Şampanya, patla! Bir veriyi nasıl çekeceğimizi öğrenelim. Ben `callback`'ları çok sevdiğim için MySQL2'de callback kullanıyorum. Kullandığımız tablo yukardaki memurlarla ilgili olan tablo olacak.
+
+```
+SELECT * FROM memurlar;
+```
+
+Basit bir soru olan `SELECT *` bütün her şeyi seçmek için kullanılır. Memur tablosunda bulunan bütün sonuçları bize verir. Sonucumuz şu olur:
+
+```
+memurun_ismi_soyismi | memurun_bodrosu | memurun_pozisyonu | aylık_kesinti
+
+Damla                | 4500            | CEO               | 130
+```
+
+Peki spesifik verileri çekmek için ne yapabiliriz? Ya da sadece istenileni nasıl çekeriz? Bu da oldukça basit. Her şeyi seçmek için `*` kullanmamanız ve isteğinizi yazmanız yeterli.
+
+```
+SELECT aylık_kesinti FROM memurlar;
+```
+
+Sonucumuz:
+
+```
+aylık_kesinti
+
+130
+```
+
+Daha da özel veri çekmek için ne yapıyoruz altan? `WHERE` kullanıyoruz müzmin! Hadi başka bir veritabanına geçelim. 
+
+
+```
+suclu_ismi | suc_orani | en_sonuncu_sucu
+
+Aether     | 100       | Sanal mafya.
+Ozzy       | 78        | Bot yapmak.
+Shinoa     | 100       | Gay olmak.
+Damla      | 35        | Harika biyografi yazmak.
+Ada        | (NULL)    | (NULL)
+```
+
+Şimdi `SELECT * FROM suclular;` yaptığımızda çıkan sonuç üstteki sonuç. Bu sonuçları daraltmaya geçmeden önce size üstteki örneği pekiştirmek amacıyla `SELECT suclu_ismi FROM suclular` yapmak istiyorum.
+
+```
+suclu_ismi 
+
+Aether
+Ozzy
+Shinoa
+Damla
+Ada
+```
+
+Bu sonuçları bir kişiye ait olmasını isterseniz? `WHERE` buradaydı değil mi? 
+
+```
+SELECT * FROM suclular WHERE suclu_ismi = 'Ozzy';
+```
+
+Çıkan sonuç: 
+
+```
+suclu_ismi | suc_orani | en_sonuncu_sucu
+
+Ozzy       | 78        | Bot yapmak.
+```
+
+## Hoş gelmişsiniz efendim: MySQL kullanarak Discord Bot'u yapmak.
+> İlk başta bir bağlantı sağlamalıyız. Bu bağlantı için MySQL2 modülünü kullanacağız. Aşağıda bağlantı için örnek verdim. (Chalk mevcut.)
+
+```
+const  con  = (global.con  =  mysql.createConnection({
+host: localhost,
+user: "root",
+password: "1234",
+database: "test_database",
+}));
+
+con.connect(err  => {
+if (err) throw  err;
+console.log(chalk.bgWhite.black(`[${moment().format('YYYY-MM-DD HH:mm:ss')}]`) +  chalk.cyan(` Successfully connected to MySQL database.`));
+});
+```
+
+Başarılı bir şekilde bağlantı gerçekleştirilirse konsola pozitif mesaj atacak. Global hale getirdiğimiz bu komut sayesinde her yerde tanımlama yapmadan kullanabiliriz. (Methodları göstermez.)
+
+## İyi güzel Faruk Ağabey, burada nasıl `query` gireceğiz?
+> Bu sorunun cevabı oldukça basit. `con.query()` direk olarak `query` komutları girmenize yardım eder. Örnek vermek gerekirse, `con.query("CREATE DATABASE OlumNedirKi")` gibi. 
+
+### Özel zamanlar için not alma vakti. Yaz kızım...
+> Çok basit bir not alma komutu yaratmaya ne dersin? Hadi yapalım! Ama yapmadan önce bir tablo oluşturalım.
+
+```
+CREATE TABLE Notes (
+  note_author VARCHAR(18) NOT NULL,
+  note_description TEXT CHARACTER SET utf8 NOT NULL,
+  note_time DATETIME DEFAULT (CURRENT_TIME)
+); 
+```
+
+```
+(1-) if (!args[0]) return message.channel.send("Bir içerik girmek zorundasın!")
+
+(2-) con.query(`SELECT * FROM Notes WHERE note_author = '${message.author}'`, async (err, rows) => {
+(3-)  if (err) throw err;
+(4-)  if (rows.length < 1) {
+(5-)  con.query(`INSERT INTO Notes (note_author, note_description) VALUES ('${message.author.id}','${args.join(" ")}')`)
+(6-)  } else {
+(7-)    con.query(`UPDATE Notes SET note_description = '${args.join(" ")} WHERE note_author = '${message.author.id}''`)
+    }
+})
+```
+
+Gözünüz korktu mu? Korktuysa hiç korkmasına gerek yok tek tek bütün numaralı yerleri anlatacağım. 
+
+**1-** Burada hiçbir not içeriği girmediysen komutu çalıştırma dedik.
+**2-** Burada o üyenin bütün notlarını çekmeye çalışıyoruz. 
+**3-** Herhangi bir hata varsa onu konsola at diyoruz.
+**4-** Eğer o `SELECT` aramasından çıkan sonuçların toplamı birden düşükse **5-** satırı çalıştır diyoruz.
+**5-** Üyenin hiçbir notu olmadığı için yeni bir not oluşturmak zorundayız değil mi? O halde `INSERT INTO` ile oluşturuyoruz.
+**6-** Şimdi de eğer üyenin notu varsa **7-** satırı çalıştır diyoruz.
+**7-** Adamın eski notunun olduğunu bildiğimiz için o notu düzenlemesini istiyoruz. 
+
+
+
+
