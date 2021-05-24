@@ -423,6 +423,185 @@ Gözünüz korktu mu? Korktuysa hiç korkmasına gerek yok tek tek bütün numar
 **6-** Şimdi de eğer üyenin notu varsa **7-** satırı çalıştır diyoruz.
 **7-** Adamın eski notunun olduğunu bildiğimiz için o notu düzenlemesini istiyoruz. 
 
+## Ağlayarak tekrar MySQL'a dönmek: `ALTER TABLE`.
+> Bir tablonuz var ama içindeki verilerinizi kaybetmeden tablonuza yeni kolonlar eklemek, değiştirmek veya silmek istiyor olabilirsiniz. Bunun için `ALTER TABLE` yardıma koşuyor. 
 
+### Kolon Eklemek
 
+Aşağıda örnek bir kolon verdik. Hemen göz atalım.
 
+```
+kitap_numarasi | kitap_sahibi | kutuphane_karti 
+
+0065           | Melis SEZEN  | TEK_GIRIS
+0031           | Yasin SEVGİM | COKLU_GIRIS
+```
+
+Üstte sadece üç adet kolonun olduğunu görüyorsunuz. Bu tablonun adı: `KUTUPHANE`. Yeni eklenen kolonlar her zaman en sona eklenir. 
+
+```
+ALTER TABLE KUTUPHANE ADD kutuphane_gecerliligi TEXT CHARACTER SET utf8 NOT NULL;
+```
+
+Sonucumuz: 
+
+```
+kitap_numarasi | kitap_sahibi | kutuphane_karti | kutuphane_gecerliligi
+
+0065           | Melis SEZEN  | TEK_GIRIS       | (NULL?)
+0031           | Yasin SEVGİM | COKLU_GIRIS     | (NULL?)
+```
+
+Üstte görüldüğü gibi yeni bir kolon ekleyebildik. Fakat burada bir problem mevcut, `kutuphane_gecerliligi` kolonunu `NOT NULL` olarak belirlediğimiz için burada `NULL` ifadelerine kesin olarak veri atanmalı. 
+
+**Uyarı:** `DEFAULT` değerler için `NULL` almadan otomatik olarak yerleştirme yapar. 
+
+### Kolon Silmek 
+
+Üstte eklediğimiz `kutuphane_gecerliligi` kolonunu silmek için aşağıdaki ifadeyi kullanmak yeterli.
+
+```
+ALTER TABLE KUTUPHANE DROP COLUMN kutuphane_gecerliligi
+```
+
+### Kolon Düzenlemek
+
+Halihazırda olan bir kolonun yeni veri tipine geçmesi için aşağıdaki `query` çalıştırılmalı:
+
+```
+ALTER TABLE KUTUPHANE MODIFY COLUMN kutuphane_gecerliligi BOOLEAN DEFAULT true
+```
+
+## Biz kural adamı değiliz moruk, kurallara uymayan havalıdır.
+> Veri tipini belirlerken en sonda kullandığınız içerikler genelde kural belirleyicilerdir. Toplam yedi adet kural belirleyici vardır.
+
+- **NOT NULL**: Bu verinin `NULL` olmadığının kuralını belirler.
+- **UNIQUE**: Herkes "*yünik*" kardeşim. Unique olarak belirlenen bir veriden bir tane daha olamaz. Bu karışıklıkların önüne geçmek için iyi bir yol.
+- **PRIMARY KEY**: Bu ibne, en iyisi benim diyenler için var. Bir veri tipinde kullanılabilen ilk anahtar kuralı `UNIQUE` ve `NOT NULL`'un birleşimidir. 
+- **FOREIGN KEY**: İleri düzeye başladığınız zaman öğreneceğiniz yabancı anahar kuralı iki tabloyu birbirine bağlamanızı sağlar. Mesela tek bir silme işlemi yaparken iki yerden otomatik olarak silmek gibi. (Örnek: T.C. ile ilgili kişilerin bilgilerinin bulunduğu bir veritabanı ve kişilerin işledikleri suçlarla ilgili veritabanı yarattınız diyelim. T.C.'den birisini atarken tek bir T.C.'yi silmeniz iki veritabanından bu bilgileri kaldırmasına sebep olacak.)
+- **CHECK**: Koşul yaratmanızı sağlar. Mesela bir veri tipini yaş olarak kaydettiniz ve kaydedilecek yaşların muhakkak 18'den büyük olmasını istiyorsanız.
+- **DEFAULT**: Üstte bir çok defa anlatılan varsayılan değer kuralı.
+-  **CREATE INDEX**: Bu ibneyi ben bile çözemedim. İndeks yaratmanıza sebep oluyor. Daha hızlı veri çekmek ve akış sağlamak için gerekli olduğunu bilmeniz yeterli. İndeksler insanlar tarafından görülemez. 
+
+## İbneye bak saat tutuyor, sen benim yediğimi mi sayıyorsun Talat?
+> MySQL saat biçimi tutmak için harika yollardan birisi. Bir sürü saat tutabileceğiniz tip var ve oldukça sağlam çalışıyorlar. Hadi onları inceleyelim.
+
+```
+DATE formatı: YYYY-MM-DD
+DATETIME formatı: YYYY-MM-DD HH:MI:SS
+TIMESTAMP formatı: YYYY-MM-DD HH:MI:SS
+YEAR formatı: YYYY or YY
+```
+
+### `DATETIME` benim saçımı çekiyor, `TIMESTAMP` neredesin lanet olsun.
+> Bir şeyi söylemeyi unutmuş olabilirim. `TIMESTAMP` bildiğiniz `TIMESTAMP`'lardan değil. Evet o bakire deği- ay pardon yanlış yere girdik. `TIMESTAMP` o karışık `3131313131313131` biçimindeki saatlerden değil. MySQL'da `TIMESTAMP` olarak saat saklamanız mümkün değil. Bundan dolayı kayıt ederken muhakkak tarih kayıt etmelisiniz. 
+
+Peki `TIMESTAMP` ile `DATETIME` arasındaki fark ne? MySQL zamanları tutmayı şundan dolayı hedefler: her veri değiştiğinde bu verinin ne zaman değiştiğini tespit etmek için. Sizin amacınız farklı olabilir siz zaman verilerini direk depolamak isteyebilirsiniz. Bu gibi durumlarda `DATETIME` kullanmanız gerekiyor. 
+
+`TIMESTAMP` ise dönüştürülme için gereklidir. UTC Tipi kayıt yapıldığı için `TIMESTAMP` kayıtları kullanıcıdan kullanıcıya değişiklilik gösterebilir. Bu ne demek oluyor? 
+
+```
+Örnek bir TIMESTAMP: 15 Mayıs 1990 GMT+1 Orta Avrupa Pasifik Saati
+```
+
+Biz Türkiye'den görüntülemek isteseydik bu `TIMESTAMP` bize göre değişecek. 
+
+## Yine başladık mı? Yahu biz bunları bilmiyor muyuz? Veri tiplerini tekrar araştıralım...
+> Bizim öğrendiğimiz kısıtlı veri tiplerini biliyorsunuz. (`BOOLEAN, TEXT, VARCHAR, INT` gibi.) Hadi derinlere dalalım.
+
+### String Türleri
+```
+CHAR(karakter?) => VARCHAR(karakter?)
+- Bildiğiniz üzere VARCHAR(18) kullanmıştık. Bu neydi? İçine en fazla 18 hanelik verilerin
+girebileceğini anlattık. CHAR aslında VARCHAR ile aynı ama bazı farklılıkları var. 
+CHAR kullanabilmek için sabit uzunluğa ihtiyacınız vardır. Yani siz T.C. ile ilgili bir 
+veritabanı oluşturdunuz diyelim, T.C.'lerin uzunluğu değişebilir mi? Hayır değişemez. Bundan
+dolayı CHAR(11) yapmanız daha mantıklı. Ama isim verilerini tutarken isimler değişkenlik
+gösterebilir değil mi? Bundan dolayı VARCHAR kullanmanız gerekir.
+
+CHAR, VARCHAR'a göre %50 daha hızlıdır.
+CHAR SMA (static memory allocation) kullanır. VARCHAR DMA (dynamic memory allocation) kullanır.
+CHAR'ın tutabileceği en büyük karakter 225'tir. VARCHAR ise 65,535 karakter tutabilir. (En çok)
+
+BINARY(karakter?) = VARBINARY(karakter?)
+- CHAR ve VARCHAR ile aynı gibi düşünebilirsiniz. Tek farkları BINARY taşıyabilmeleri. 
+
+TINYBLOB => MEDIUMBLOB => BLOB(karakter?) => LONGBLOB
+- BLOB'ları taşımak için kullanılır. TINYBLOB 225 Byte yere kadar taşıma yapabilir.
+MEDIUMBLOB'lar 16,777,215 Byte'ya kadar taşıma yapabilir. Bu sayı LONGBLOB'da 4,294,967,295
+Byte'ya kadar çıkar.  (BLOB'lar Binary şeklindeki Objelerdir.)
+
+ENUM(değer1, değer2, değer3 ...)
+- Önceden girilen değerlerin seçilebileceği ENUM seçeneklerde kullanılır. Değer olarak belirt-
+ilmeyen değer girişinde boş değer girilir. 65535'e kadar değer destekler.
+
+SET(değer1, değer2, değer3 ...)
+En fazla 64 değer alabilen SET veri tipinde hiçbir değer seçilmeyebilir ya da birden çok değer
+seçilebilir.
+```
+
+### Sayı Türleri (INT)
+
+```
+BIT(büyüklük?)
+1 ila 64 arasındaki BIT'leri tutabilir.
+
+TINYINT(sayı?) => SMALLINT(sayı?) => MEDIUMINT(sayı?) => INT(sayı?) => BIGINT(sayı?)
+
+TINYINT en fazla -128 ila 127 sayılarını (ve arasındakini) tutabilir.
+SMALLINT en fazla -32768 ila 32767 sayılarını (ve arasındakini) tutabilir.
+MEDIUMINT en fazla -8388608 ila 8388607 sayılarını (ve arasındakini) tutabilir.
+INT en fazla -2147483648 ila 2147483647 sayılarını (ve arasındakini) tutabilir.
+BIGINT en fazla -9223372036854775808 ila 9223372036854775807 sayılarını (ve arasındakini)
+tutabilir.
+INT(sayı?) === INTEGER(sayı?)'dır.
+
+BOOL = BOOLEAN
+0 veya 1 olarak veri tutar. (true/false.)
+İleri düzey bilgi: BOOLEAN veriler 0 veya 1 olabilir desek de, 1'den büyük değerleri alırsa
+1'e eşit yani true olarak görülür. Sadece 0 değeri false değer alabilir.
+
+Allah'ın unuttuğu diğer veri tipleri ve ananızın ağlayacağı diğer türler: FLOAT(), 
+DOUBLE(), DOUBLE PRECISION(), DEC() veya DECIMAL().
+
+ALLAHIN BELASI UNSIGNED ve ZEROFILL'in anlatımı aşağıda.
+```
+
+### ZEROFILL'i ve UNSIGNED'i üretenin ailevi değerlerine selam olsun.
+> Anlaması kıt arkadaşlarımız için kısa özet: `ZEROFILL` varsa sadece `TINYINT` değerler için varolabilir. Bu ne demek? `ZEROFILL` sadece `TINYINT` için çalışır demek. Peki ne iş yapıyor? Sayının sonuna ne kadar sıfır isterseniz herhangi bir veri girişinde o kadar sıfır ekliyor. `UNSIGNED` ise masum görünebilir bu sayının sadece `POSITIVE` değerler alabileceğini gösterir. `UNSIGNED` her türlü `INTEGER` değerde kullanılabilir. Bununla da kalmaz yukardaki öğrendiğiniz bütün sayıların alabileceği değerlerin amına koyar.
+
+`UNSIGNED` Değerleri:
+`TINYINT`: 0 ila 255 arası. 
+`SMALLINT`: 0 ila 65535 arası.
+`MEDIUMINT`: 0 ila 16777215 arası.
+`INT`: 0 ila 4294967295 arası.
+`BIGINT`: 0 ila 18446744073709551615 arası. 
+
+```
+Diğer dillerde 18446744073709551615 sayısının okunuşu. NEDEN BÖYLE BİR SAYI VAR AMINA
+KODUKLARIM BU KADAR BÜYÜK SAYIYI NE YAPIYORSUNUZ?
+
+TÜRKÇE: on sekiz kentrilyon dört yüz kırk altı katrilyon yedi yüz kırk dört trilyon yetmiş üç 
+milyar yedi yüz dokuz milyon beş yüz elli bir bin altı yüz on beş.
+
+LEHÇE: osiemnaście trylionów czterysta czterdzieści sześć biliardów siedemset czterdzieści
+cztery biliony siedemdziesiąt trzy miliardy siedemset dziewięć milionów pięćset 
+pięćdziesiąt dwa tysiące osiemset siedem. (Bu ne amına koyayım.)
+
+İNGİLİZCE: eighteen quintillion four hundred forty-six quadrillion seven hundred forty-four 
+trillion seventy-three billion seven hundred nine million five hundred fifty-two thousand 
+eight hundred seven.
+```
+
+## Veritabanınızı kemiren fareler için fare tuzağı. Backup DB!
+> Veritabanlarınızı güvenli çözümlerden birisi olan `BACKUP` ile koruyun. Kısa anlatımla `BACKUP` yedek alma işlemidir. Sonundaki uzantısı `.bak` olarak bitmek zorunda olduğunu unutmayın.
+
+```
+BACKUP DATABASE testDB TO DISK = 'D:\backups\testDB.bak';
+```
+
+Seçtiğiniz yere anında yedek alacaktır. (Uzun veritabanlarında işlem sürer.) Bu tüm `BACKUP` alınması anlamına gelir. `DIFFERENTIAL` biçimde almak isteyenleri aşağıya beklerim. (Bu ne lan? Diyenleri görüyorum. `DIFFERENTIAL Backup` türü diğer aldığınız yedekleme ile şu anki veritabanını karşılaştırır ve sadece değişikliklerin yedeklerini alır.)
+
+```
+BACKUP DATABASE testDB TO DISK = 'D:\backups\testDB.bak' WITH DIFFERENTIAL;
+```
